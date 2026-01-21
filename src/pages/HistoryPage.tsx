@@ -2,6 +2,7 @@ import { Zap, Calendar, Clock, MapPin, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import jsPDF from "jspdf";
 
 interface ChargingSession {
   id: number;
@@ -74,44 +75,122 @@ const historyData: ChargingSession[] = [
 ];
 
 const generateReceipt = (session: ChargingSession) => {
-  const receiptContent = `
-╔════════════════════════════════════════╗
-║         HIPER CHARGING RECEIPT         ║
-╠════════════════════════════════════════╣
-║                                        ║
-║  Station: ${session.station.padEnd(28)}║
-║  Address: ${session.address.substring(0, 28).padEnd(28)}║
-║                                        ║
-╠════════════════════════════════════════╣
-║  Date:        ${session.date.padEnd(24)}║
-║  Time:        ${session.time.padEnd(24)}║
-║  Duration:    ${session.duration.padEnd(24)}║
-║                                        ║
-╠════════════════════════════════════════╣
-║  Energy Charged:  ${session.energy.padEnd(20)}║
-║  Amount Paid:     ${session.cost.padEnd(20)}║
-║                                        ║
-╠════════════════════════════════════════╣
-║                                        ║
-║  Thank you for choosing HIPER!         ║
-║  Drive safe and stay charged! ⚡       ║
-║                                        ║
-╚════════════════════════════════════════╝
-  `.trim();
-
-  const blob = new Blob([receiptContent], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `HIPER_Receipt_${session.date.replace(/[, ]/g, "_")}.txt`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Header background
+  doc.setFillColor(30, 64, 175); // Primary blue
+  doc.rect(0, 0, pageWidth, 50, "F");
+  
+  // Logo/Brand
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(28);
+  doc.setFont("helvetica", "bold");
+  doc.text("HIPER", pageWidth / 2, 25, { align: "center" });
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text("charging", pageWidth / 2, 35, { align: "center" });
+  
+  // Receipt title
+  doc.setTextColor(30, 64, 175);
+  doc.setFontSize(20);
+  doc.setFont("helvetica", "bold");
+  doc.text("CHARGING RECEIPT", pageWidth / 2, 70, { align: "center" });
+  
+  // Divider line
+  doc.setDrawColor(30, 64, 175);
+  doc.setLineWidth(0.5);
+  doc.line(20, 78, pageWidth - 20, 78);
+  
+  // Station details section
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("STATION", 20, 92);
+  
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.station, 20, 100);
+  
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text(session.address, 20, 108);
+  
+  // Details grid
+  const detailsY = 130;
+  const leftCol = 20;
+  const rightCol = pageWidth / 2 + 10;
+  
+  // Left column
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.text("DATE", leftCol, detailsY);
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.date, leftCol, detailsY + 8);
+  
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("TIME", leftCol, detailsY + 25);
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.time, leftCol, detailsY + 33);
+  
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("DURATION", leftCol, detailsY + 50);
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.duration, leftCol, detailsY + 58);
+  
+  // Right column
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("ENERGY CHARGED", rightCol, detailsY);
+  doc.setTextColor(30, 64, 175);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.energy, rightCol, detailsY + 10);
+  
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("AMOUNT PAID", rightCol, detailsY + 30);
+  doc.setTextColor(30, 64, 175);
+  doc.setFontSize(24);
+  doc.setFont("helvetica", "bold");
+  doc.text(session.cost, rightCol, detailsY + 42);
+  
+  // Footer divider
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.3);
+  doc.line(20, 220, pageWidth - 20, 220);
+  
+  // Footer
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.text("Thank you for choosing HIPER Charging!", pageWidth / 2, 235, { align: "center" });
+  doc.text("Drive safe and stay charged! ⚡", pageWidth / 2, 245, { align: "center" });
+  
+  // Receipt ID
+  doc.setFontSize(8);
+  doc.text(`Receipt ID: HIPER-${session.id}-${Date.now()}`, pageWidth / 2, 260, { align: "center" });
+  
+  // Save PDF
+  doc.save(`HIPER_Receipt_${session.date.replace(/[, ]/g, "_")}.pdf`);
 
   toast({
     title: "Receipt Downloaded",
-    description: `Receipt for ${session.station} has been downloaded.`,
+    description: `PDF receipt for ${session.station} has been downloaded.`,
   });
 };
 
