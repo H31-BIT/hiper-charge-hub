@@ -1,5 +1,14 @@
+import { useState } from "react";
 import { Zap, Battery, Clock, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
+const chargingTypes = [
+  { id: "fast", name: "Fast Charge", kwh: "60 kWh" },
+  { id: "quick", name: "Quick Charge", kwh: "120 kWh" },
+  { id: "flash", name: "Flash Charge", kwh: "180 kWh" },
+  { id: "hiper", name: "HIPER Charge", kwh: "240 kWh" },
+];
 
 const quickStats = [
   { icon: Zap, label: "Energy Used", value: "245 kWh", color: "text-primary" },
@@ -14,12 +23,43 @@ const nearbyStations = [
 ];
 
 const HomePage = () => {
+  const [activeChargeType, setActiveChargeType] = useState("fast");
+
   return (
     <div className="px-4 py-6 space-y-6">
       {/* Welcome Section */}
       <div>
         <h2 className="text-2xl font-bold text-foreground">Good Morning!</h2>
         <p className="text-muted-foreground mt-1">Ready to charge your vehicle?</p>
+      </div>
+
+      {/* Charging Type Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+        {chargingTypes.map((type) => (
+          <button
+            key={type.id}
+            onClick={() => setActiveChargeType(type.id)}
+            className={cn(
+              "flex-shrink-0 px-4 py-3 rounded-xl transition-all duration-200 text-center min-w-[90px]",
+              activeChargeType === type.id
+                ? "gradient-primary text-primary-foreground shadow-card"
+                : "bg-card border border-border text-foreground hover:border-primary/50"
+            )}
+          >
+            <p className={cn(
+              "text-sm font-semibold whitespace-nowrap",
+              activeChargeType === type.id ? "text-primary-foreground" : "text-foreground"
+            )}>
+              {type.name}
+            </p>
+            <p className={cn(
+              "text-xs mt-0.5",
+              activeChargeType === type.id ? "text-primary-foreground/80" : "text-muted-foreground"
+            )}>
+              {type.kwh}
+            </p>
+          </button>
+        ))}
       </div>
 
       {/* Quick Stats */}
