@@ -43,7 +43,10 @@ const Header = () => {
               <User className="w-4 h-4" />
               <span>User Profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+            <DropdownMenuItem 
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => navigate('/vehicle')}
+            >
               <Car className="w-4 h-4" />
               <span>Vehicle Details</span>
             </DropdownMenuItem>
