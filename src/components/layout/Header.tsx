@@ -51,7 +51,10 @@ const Header = () => {
               <span>Vehicle Details</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+            <DropdownMenuItem 
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => navigate('/settings')}
+            >
               <Settings className="w-4 h-4" />
               <span>Settings</span>
             </DropdownMenuItem>
