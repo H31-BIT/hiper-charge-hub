@@ -1,4 +1,4 @@
-import { User, Mail, LogIn, Edit2 } from "lucide-react";
+import { User, Mail, LogIn, Edit2, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const UserProfilePage = () => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
     name: "John Doe",
@@ -22,6 +24,16 @@ const UserProfilePage = () => {
 
   return (
     <div className="p-4 pb-24 space-y-6">
+      {/* Back Button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate('/')}
+        className="flex items-center gap-2 text-muted-foreground hover:text-foreground -ml-2"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Home
+      </Button>
       {/* Profile Header */}
       <div className="flex flex-col items-center text-center space-y-4">
         <Avatar className="w-24 h-24 border-4 border-primary/20">
