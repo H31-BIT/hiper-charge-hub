@@ -1,5 +1,6 @@
 import { Zap, User, Car, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,6 +10,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
+  const navigate = useNavigate();
+
   return (
     <header className="gradient-header text-primary-foreground px-6 py-4 sticky top-0 z-50">
       <div className="flex items-center justify-between">
@@ -33,7 +36,10 @@ const Header = () => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+            <DropdownMenuItem 
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => navigate('/profile')}
+            >
               <User className="w-4 h-4" />
               <span>User Profile</span>
             </DropdownMenuItem>
