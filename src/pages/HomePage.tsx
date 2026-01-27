@@ -1,13 +1,55 @@
 import { useState } from "react";
-import { Zap, Battery, Clock, ChevronRight } from "lucide-react";
+import { Zap, Battery, Clock, ChevronRight, BatteryCharging, Timer, Gauge } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const chargingTypes = [
-  { id: "fast", name: "Fast Charge", kwh: "60 kWh" },
-  { id: "quick", name: "Quick Charge", kwh: "120 kWh" },
-  { id: "flash", name: "Flash Charge", kwh: "180 kWh" },
-  { id: "hiper", name: "HIPER Charge", kwh: "240 kWh" },
+  { 
+    id: "fast", 
+    name: "Fast Charge", 
+    kwh: "60 kWh",
+    description: "Standard charging for daily use",
+    estimatedTime: "45-60 minutes",
+    power: "60 kW",
+    cost: "₹8/kWh",
+    bestFor: "Overnight or extended stops"
+  },
+  { 
+    id: "quick", 
+    name: "Quick Charge", 
+    kwh: "120 kWh",
+    description: "Balanced speed and efficiency",
+    estimatedTime: "25-35 minutes",
+    power: "120 kW",
+    cost: "₹10/kWh",
+    bestFor: "Lunch breaks or shopping"
+  },
+  { 
+    id: "flash", 
+    name: "Flash Charge", 
+    kwh: "180 kWh",
+    description: "Ultra-fast for quick top-ups",
+    estimatedTime: "15-20 minutes",
+    power: "180 kW",
+    cost: "₹12/kWh",
+    bestFor: "Highway stops or urgent needs"
+  },
+  { 
+    id: "hiper", 
+    name: "HIPER Charge", 
+    kwh: "240 kWh",
+    description: "Maximum speed charging technology",
+    estimatedTime: "10-15 minutes",
+    power: "240 kW",
+    cost: "₹15/kWh",
+    bestFor: "When every minute counts"
+  },
 ];
 
 const quickStats = [
@@ -24,6 +66,12 @@ const nearbyStations = [
 
 const HomePage = () => {
   const [activeChargeType, setActiveChargeType] = useState("fast");
+  const [selectedMode, setSelectedMode] = useState<typeof chargingTypes[0] | null>(null);
+
+  const handleModeClick = (type: typeof chargingTypes[0]) => {
+    setActiveChargeType(type.id);
+    setSelectedMode(type);
+  };
 
   return (
     <div className="px-4 py-6 space-y-6">
@@ -38,7 +86,7 @@ const HomePage = () => {
         {chargingTypes.map((type) => (
           <button
             key={type.id}
-            onClick={() => setActiveChargeType(type.id)}
+            onClick={() => handleModeClick(type)}
             className={cn(
               "flex-shrink-0 px-4 py-3 rounded-xl transition-all duration-200 text-center min-w-[90px]",
               activeChargeType === type.id
@@ -61,6 +109,62 @@ const HomePage = () => {
           </button>
         ))}
       </div>
+
+      {/* Charging Mode Details Dialog */}
+      <Dialog open={!!selectedMode} onOpenChange={() => setSelectedMode(null)}>
+        <DialogContent className="sm:max-w-[400px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Zap className="w-5 h-5 text-primary" />
+              {selectedMode?.name}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedMode && (
+            <div className="space-y-4 pt-2">
+              <p className="text-muted-foreground">{selectedMode.description}</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="p-3 bg-muted/50 border-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Gauge className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">Power Output</span>
+                  </div>
+                  <p className="font-semibold text-foreground">{selectedMode.power}</p>
+                </Card>
+                
+                <Card className="p-3 bg-muted/50 border-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Timer className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">Charge Time</span>
+                  </div>
+                  <p className="font-semibold text-foreground">{selectedMode.estimatedTime}</p>
+                </Card>
+                
+                <Card className="p-3 bg-muted/50 border-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <BatteryCharging className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">Max Capacity</span>
+                  </div>
+                  <p className="font-semibold text-foreground">{selectedMode.kwh}</p>
+                </Card>
+                
+                <Card className="p-3 bg-muted/50 border-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-xs text-muted-foreground">Cost</span>
+                  </div>
+                  <p className="font-semibold text-foreground">{selectedMode.cost}</p>
+                </Card>
+              </div>
+              
+              <div className="bg-primary/10 rounded-xl p-3">
+                <p className="text-sm text-primary font-medium">Best for:</p>
+                <p className="text-sm text-foreground mt-1">{selectedMode.bestFor}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3">
