@@ -11,17 +11,7 @@ import {
 
 const chargingTypes = [
   { 
-    id: "fast", 
-    name: "Fast Charge", 
-    kwh: "60 kWh",
-    description: "Standard charging for daily use",
-    estimatedTime: "45-60 minutes",
-    power: "60 kW",
-    cost: "₹8/kWh",
-    bestFor: "Overnight or extended stops"
-  },
-  { 
-    id: "quick", 
+    id: "quick",
     name: "Quick Charge", 
     kwh: "120 kWh",
     description: "Balanced speed and efficiency",
@@ -65,7 +55,7 @@ const nearbyStations = [
 ];
 
 const HomePage = () => {
-  const [activeChargeType, setActiveChargeType] = useState("fast");
+  const [activeChargeType, setActiveChargeType] = useState("quick");
   const [selectedMode, setSelectedMode] = useState<typeof chargingTypes[0] | null>(null);
 
   const handleModeClick = (type: typeof chargingTypes[0]) => {
