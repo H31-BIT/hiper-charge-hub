@@ -3,19 +3,6 @@ import { MapPin, Navigation, Filter, Search, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
-// Custom marker icon
-const chargingIcon = new L.Icon({
-  iconUrl: "https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-green.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 const stations = [
   { id: 1, name: "HIPER Station Central", address: "123 Main Street, Mumbai", distance: "0.5 km", available: 4, total: 6, type: "Quick", lat: 19.076, lng: 72.8777 },
@@ -28,6 +15,18 @@ const stations = [
 
 const MapPage = () => {
   const [selectedStation, setSelectedStation] = useState<typeof stations[0] | null>(null);
+
+  const mapCenter = selectedStation
+    ? `${selectedStation.lat},${selectedStation.lng}`
+    : "20.5937,78.9629";
+  const mapZoom = selectedStation ? 12 : 5;
+
+  // Build marker string for all stations
+  const markers = stations
+    .map((s) => `${s.lat},${s.lng},green-pushpin`)
+    .join("~");
+
+  const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=68.0,6.0,97.5,37.0&layer=mapnik&marker=${mapCenter}`;
 
   return (
     <div className="h-full flex flex-col">
@@ -53,42 +52,55 @@ const MapPage = () => {
 
       {/* Interactive Map */}
       <div className="flex-1 relative mx-4 rounded-2xl overflow-hidden mb-4 min-h-[300px]">
-        <MapContainer
-          center={[20.5937, 78.9629]}
-          zoom={5}
-          scrollWheelZoom={true}
-          className="h-full w-full rounded-2xl z-0"
-          style={{ minHeight: "300px" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-          {stations.map((station) => (
-            <Marker
+        <iframe
+          title="Charging Stations Map"
+          width="100%"
+          height="100%"
+          style={{ border: 0, minHeight: "300px" }}
+          src={mapSrc}
+          allowFullScreen
+        />
+        {/* Station pin overlays */}
+        {stations.map((station) => {
+          // Approximate positions on the embedded map (percentage-based)
+          const top = ((37 - station.lat) / 31) * 100;
+          const left = ((station.lng - 68) / 29.5) * 100;
+          return (
+            <button
               key={station.id}
-              position={[station.lat, station.lng]}
-              icon={chargingIcon}
-              eventHandlers={{
-                click: () => setSelectedStation(station),
-              }}
+              className="absolute z-10 group"
+              style={{ top: `${top}%`, left: `${left}%`, transform: "translate(-50%, -100%)" }}
+              onClick={() => setSelectedStation(station)}
             >
-              <Popup>
-                <div className="text-sm space-y-1 min-w-[160px]">
-                  <p className="font-bold">{station.name}</p>
-                  <p className="text-xs text-gray-500">{station.address}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Zap className="w-3 h-3 text-green-600" />
-                    <span className="text-xs font-medium">{station.type}</span>
-                    <span className="text-xs ml-auto font-semibold text-green-600">
-                      {station.available}/{station.total} free
-                    </span>
-                  </div>
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-125 ${
+                  selectedStation?.id === station.id
+                    ? "bg-primary scale-125"
+                    : "bg-primary/80"
+                }`}
+              >
+                <Zap className="w-4 h-4 text-primary-foreground" />
+              </div>
+            </button>
+          );
+        })}
+
+        {/* Selected station tooltip */}
+        {selectedStation && (
+          <div className="absolute bottom-3 left-3 right-3 z-20">
+            <Card className="p-3 bg-card/95 backdrop-blur border-0 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold text-foreground text-sm">{selectedStation.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedStation.address}</p>
                 </div>
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+                <span className="text-sm font-bold text-primary">
+                  {selectedStation.available}/{selectedStation.total} free
+                </span>
+              </div>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Station List */}
