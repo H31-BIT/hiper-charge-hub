@@ -1,6 +1,9 @@
-import { Zap, Calendar, Clock, MapPin, Download } from "lucide-react";
+import { useState } from "react";
+import { Zap, Calendar, Clock, MapPin, Download, CalendarIcon } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 
@@ -194,7 +197,86 @@ const generateReceipt = (session: ChargingSession) => {
   });
 };
 
+const months = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+const years = ["2023", "2024", "2025", "2026"];
+
+const days = Array.from({ length: 31 }, (_, i) => String(i + 1));
+
 const HistoryPage = () => {
+  const [selectedDay, setSelectedDay] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedYear, setSelectedYear] = useState<string>("2025");
+
+  const filteredSessions = historyData.filter((session) => {
+    const sessionDate = new Date(session.date);
+    if (selectedYear && sessionDate.getFullYear() !== Number(selectedYear)) return false;
+    if (selectedMonth && sessionDate.getMonth() !== months.indexOf(selectedMonth)) return false;
+    if (selectedDay && sessionDate.getDate() !== Number(selectedDay)) return false;
+    return true;
+  });
+
+  const downloadFilteredHistory = () => {
+    if (filteredSessions.length === 0) {
+      toast({ title: "No Data", description: "No sessions found for selected period." });
+      return;
+    }
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    doc.setFillColor(30, 64, 175);
+    doc.rect(0, 0, pageWidth, 45, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("HIPER", pageWidth / 2, 22, { align: "center" });
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Charging History Report", pageWidth / 2, 34, { align: "center" });
+
+    const period = [selectedDay, selectedMonth, selectedYear].filter(Boolean).join(" ") || "All Time";
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(12);
+    doc.text(`Period: ${period}`, 20, 60);
+
+    let y = 75;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(100, 100, 100);
+    doc.text("Station", 20, y);
+    doc.text("Date", 85, y);
+    doc.text("Energy", 125, y);
+    doc.text("Duration", 150, y);
+    doc.text("Cost", 180, y);
+    y += 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+    y += 8;
+
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(30, 30, 30);
+    filteredSessions.forEach((s) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.text(s.station, 20, y);
+      doc.text(s.date, 85, y);
+      doc.text(s.energy, 125, y);
+      doc.text(s.duration, 150, y);
+      doc.text(s.cost, 180, y);
+      y += 10;
+    });
+
+    const totalCost = filteredSessions.reduce((sum, s) => sum + parseFloat(s.cost.replace("$", "")), 0);
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total: $${totalCost.toFixed(2)}`, 180, y, { align: "right" });
+
+    doc.save(`HIPER_History_${period.replace(/\s/g, "_")}.pdf`);
+    toast({ title: "History Downloaded", description: `PDF report for ${period} downloaded.` });
+  };
+
   return (
     <div className="px-4 py-6 space-y-6">
       <div>
@@ -220,11 +302,89 @@ const HistoryPage = () => {
         </div>
       </div>
 
+      {/* Date Filter & Download Table */}
+      <Card className="p-4 shadow-card border-0 bg-card space-y-4">
+        <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+          <CalendarIcon className="w-4 h-4 text-primary" />
+          Download History
+        </h3>
+        <div className="grid grid-cols-3 gap-3">
+          <Select value={selectedDay} onValueChange={setSelectedDay}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Day" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_days">All Days</SelectItem>
+              {days.map((d) => (
+                <SelectItem key={d} value={d}>{d}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Month" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_months">All Months</SelectItem>
+              {months.map((m) => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Year" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map((y) => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Filtered sessions table */}
+        <div className="rounded-lg border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-accent/50">
+                <TableHead className="text-xs">Station</TableHead>
+                <TableHead className="text-xs">Date</TableHead>
+                <TableHead className="text-xs">kWh</TableHead>
+                <TableHead className="text-xs text-right">Cost</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSessions.length > 0 ? (
+                filteredSessions.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="text-xs font-medium py-2">{s.station.replace("HIPER ", "")}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground py-2">{s.date}</TableCell>
+                    <TableCell className="text-xs py-2">{s.energy}</TableCell>
+                    <TableCell className="text-xs text-right font-semibold text-primary py-2">{s.cost}</TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground py-6">
+                    No sessions found
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        <Button className="w-full gap-2" onClick={downloadFilteredHistory}>
+          <Download className="w-4 h-4" />
+          Download Report ({filteredSessions.length} sessions)
+        </Button>
+      </Card>
+
       {/* History List */}
       <div className="space-y-4">
         {historyData.map((session) => (
           <Card key={session.id} className="p-4 shadow-card border-0 bg-card">
-            {/* Header */}
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
@@ -239,8 +399,6 @@ const HistoryPage = () => {
               </div>
               <p className="text-lg font-bold text-primary">{session.cost}</p>
             </div>
-
-            {/* Details Grid */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="w-4 h-4 text-muted-foreground" />
@@ -259,8 +417,6 @@ const HistoryPage = () => {
                 <span className="text-muted-foreground">{session.energy}</span>
               </div>
             </div>
-
-            {/* Download Button */}
             <Button
               variant="outline"
               size="sm"
