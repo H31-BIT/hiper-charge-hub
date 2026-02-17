@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Zap, Battery, Clock, ChevronRight, BatteryCharging, Timer, Gauge } from "lucide-react";
+import { Zap, Battery, Clock, BatteryCharging, Timer, Gauge, Car, Thermometer, Activity } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
@@ -48,11 +48,6 @@ const quickStats = [
   { icon: Clock, label: "Total Time", value: "48h 30m", color: "text-primary" },
 ];
 
-const nearbyStations = [
-  { id: 1, name: "HIPER Station Central", address: "123 Main Street", distance: "0.5 km", available: 4, total: 6 },
-  { id: 2, name: "HIPER Hub Mall", address: "456 Shopping Ave", distance: "1.2 km", available: 2, total: 4 },
-  { id: 3, name: "HIPER Express Park", address: "789 Park Road", distance: "2.8 km", available: 6, total: 8 },
-];
 
 const HomePage = () => {
   const [activeChargeType, setActiveChargeType] = useState("quick");
@@ -196,33 +191,51 @@ const HomePage = () => {
         </div>
       </Card>
 
-      {/* Nearby Stations */}
+      {/* Vehicle Status */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Nearby Stations</h3>
-          <button className="text-sm text-primary font-medium flex items-center gap-1">
-            View all <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="space-y-3">
-          {nearbyStations.map((station) => (
-            <Card key={station.id} className="p-4 shadow-card border-0 bg-card">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-foreground">{station.name}</h4>
-                  <p className="text-sm text-muted-foreground mt-0.5">{station.address}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-xs text-muted-foreground">{station.distance}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-foreground font-medium">
-                      {station.available}/{station.total} available
-                    </span>
-                  </div>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </Card>
-          ))}
-        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Vehicle Status</h3>
+        <Card className="p-5 shadow-card border-0 bg-card space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Car className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-foreground">Tesla Model 3</h4>
+              <p className="text-xs text-muted-foreground">MH 01 AB 1234</p>
+            </div>
+          </div>
+
+          {/* Battery bar */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-sm text-muted-foreground">Battery Level</span>
+              <span className="text-sm font-bold text-primary">78%</span>
+            </div>
+            <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+              <div className="h-full rounded-full bg-primary transition-all" style={{ width: "78%" }} />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">~280 km range remaining</p>
+          </div>
+
+          {/* Status grid */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-muted/50 rounded-xl p-3 text-center">
+              <Thermometer className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-sm font-bold text-foreground">32°C</p>
+              <p className="text-[10px] text-muted-foreground">Battery Temp</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-3 text-center">
+              <Activity className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-sm font-bold text-foreground">Good</p>
+              <p className="text-[10px] text-muted-foreground">Health</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-3 text-center">
+              <Timer className="w-4 h-4 text-primary mx-auto mb-1" />
+              <p className="text-sm font-bold text-foreground">12,450</p>
+              <p className="text-[10px] text-muted-foreground">Total km</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );
