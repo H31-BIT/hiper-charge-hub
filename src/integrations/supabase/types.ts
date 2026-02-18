@@ -14,7 +14,158 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      charging_sessions: {
+        Row: {
+          cost: number | null
+          created_at: string
+          duration_minutes: number | null
+          ended_at: string | null
+          energy_kwh: number | null
+          id: string
+          started_at: string
+          station_address: string | null
+          station_id: string | null
+          station_name: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          energy_kwh?: number | null
+          id?: string
+          started_at?: string
+          station_address?: string | null
+          station_id?: string | null
+          station_name: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string
+          duration_minutes?: number | null
+          ended_at?: string | null
+          energy_kwh?: number | null
+          id?: string
+          started_at?: string
+          station_address?: string | null
+          station_id?: string | null
+          station_name?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charging_sessions_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "charging_stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      charging_stations: {
+        Row: {
+          address: string
+          available_ports: number
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          name: string
+          power_kw: number | null
+          station_type: string | null
+          total_ports: number
+        }
+        Insert: {
+          address: string
+          available_ports?: number
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          name: string
+          power_kw?: number | null
+          station_type?: string | null
+          total_ports?: number
+        }
+        Update: {
+          address?: string
+          available_ports?: number
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          name?: string
+          power_kw?: number | null
+          station_type?: string | null
+          total_ports?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      vehicles: {
+        Row: {
+          battery_capacity_kwh: number | null
+          created_at: string
+          id: string
+          license_plate: string | null
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          battery_capacity_kwh?: number | null
+          created_at?: string
+          id?: string
+          license_plate?: string | null
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          battery_capacity_kwh?: number | null
+          created_at?: string
+          id?: string
+          license_plate?: string | null
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
