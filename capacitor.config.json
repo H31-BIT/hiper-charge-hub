@@ -1,0 +1,9 @@
+{
+  "appId": "app.lovable.59f199cb49ca42059a6ca655722b95b2",
+  "appName": "HIPER Charging",
+  "webDir": "dist",
+  "server": {
+    "url": "https://59f199cb-49ca-4205-9a6c-a655722b95b2.lovableproject.com?forceHideBadge=true",
+    "cleartext": true
+  }
+}
